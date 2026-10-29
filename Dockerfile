@@ -46,6 +46,8 @@ COPY --from=scripts-deps --chown=nextjs:nodejs /scripts-deps/node_modules ./scri
 
 # Uploaded images: mount a persistent volume here.
 RUN mkdir -p /app/storage/uploads && chown -R nextjs:nodejs /app/storage
+# Images committed in storage/uploads, copied into the volume at startup when missing.
+COPY --from=builder --chown=nextjs:nodejs /app/storage/uploads ./seed/uploads
 
 USER nextjs
 EXPOSE 3000
@@ -53,4 +55,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/manifest.webmanifest > /dev/null || exit 1
 
-CMD ["node", "server.js"]
+# -n never overwrites: images edited or replaced from the admin are kept.
+CMD ["sh", "-c", "cp -Rn /app/seed/uploads/. \"$STORAGE_DIR\"/ 2>/dev/null || true; exec node server.js"]
