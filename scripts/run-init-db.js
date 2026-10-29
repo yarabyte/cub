@@ -1,5 +1,5 @@
 /**
- * Crée la base cubafoussam et les tables (articles, admin_users).
+ * Crée la base MYSQL_DATABASE (cubafoussam par défaut) et ses tables.
  * Utilise les variables MYSQL_* de .env / .env.local.
  * Usage: node scripts/run-init-db.js
  */
@@ -24,10 +24,17 @@ async function main() {
     process.exit(1)
   }
   const port = getEnv("MYSQL_PORT") || "3306"
+  const database = getEnv("MYSQL_DATABASE") || "cubafoussam"
+  if (!/^[A-Za-z0-9_$]+$/.test(database)) {
+    console.error(`Nom de base invalide dans MYSQL_DATABASE : ${database}`)
+    process.exit(1)
+  }
 
   const sqlPath = path.join(__dirname, "init-db.sql")
   let sql = fs.readFileSync(sqlPath, "utf8")
   sql = sql.replace(/^\s*--[^\n]*\n/gm, "")
+  // init-db.sql names the database "cubafoussam"; hosted databases (Coolify: "default") use MYSQL_DATABASE.
+  sql = sql.replace(/\b(CREATE DATABASE IF NOT EXISTS|USE)\s+cubafoussam\b/g, (_, keyword) => `${keyword} \`${database}\``)
   const statements = sql
     .split(";")
     .map((s) => s.trim())
@@ -46,7 +53,7 @@ async function main() {
     await conn.query(statement)
   }
   await conn.end()
-  console.log("Base cubafoussam et tables créées (articles, admin_users).")
+  console.log(`Base ${database} et tables créées.`)
 }
 
 main().catch((err) => {
