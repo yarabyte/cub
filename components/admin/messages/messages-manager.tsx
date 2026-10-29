@@ -204,7 +204,7 @@ function StatTile({ icon: Icon, label, value, hint, color }: { icon: LucideIcon;
           <span className="text-xl font-black leading-none tracking-tight text-[#0D1A2E] tabular-nums">{value}</span>
           {hint && <span className="truncate text-[11px] font-medium text-slate-400">{hint}</span>}
         </p>
-        <p className="mt-1 truncate text-xs font-medium text-slate-500">{label}</p>
+        <p className="mt-1 text-xs font-medium leading-tight text-slate-500">{label}</p>
       </div>
     </div>
   )
@@ -213,9 +213,11 @@ function StatTile({ icon: Icon, label, value, hint, color }: { icon: LucideIcon;
 export default function MessagesManager({
   messages,
   mailConfigured,
+  recipient,
 }: {
   messages: MessageRow[]
   mailConfigured: boolean
+  recipient: string
 }) {
   const router = useRouter()
   const [rows, setRows] = useState(messages)
@@ -364,26 +366,26 @@ export default function MessagesManager({
         <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" />
           <p>
-            L'envoi par e-mail n'est pas configuré : les messages sont enregistrés ici mais ne sont pas transmis à
-            contact@cubafoussam.cm. Renseignez <code className="font-mono text-xs">SMTP_HOST</code>,{" "}
+            L'envoi par e-mail n'est pas configuré : les messages sont enregistrés ici mais ne sont pas transmis à{" "}
+            {recipient}. Renseignez <code className="font-mono text-xs">SMTP_HOST</code>,{" "}
             <code className="font-mono text-xs">SMTP_USER</code> et <code className="font-mono text-xs">SMTP_PASSWORD</code>{" "}
-            dans <code className="font-mono text-xs">.env.local</code>, puis redémarrez le serveur.
+            dans les variables d'environnement du serveur, puis redémarrez-le.
           </p>
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile icon={Inbox} label="Messages reçus" value={String(rows.length)} color="#1B4FA8" />
+        <StatTile icon={Inbox} label="Reçus" value={String(rows.length)} color="#1B4FA8" />
         <StatTile
           icon={Mail}
           label="Non lus"
           value={String(counts.new)}
           color={counts.new > 0 ? "#DC2626" : "#64748B"}
         />
-        <StatTile icon={CalendarClock} label="Ces 7 derniers jours" value={String(stats.lastWeek)} color="#C99A00" />
+        <StatTile icon={CalendarClock} label="7 derniers jours" value={String(stats.lastWeek)} color="#C99A00" />
         <StatTile
           icon={MailCheck}
-          label="Transmis par e-mail"
+          label="Transmis par mail"
           value={String(stats.sent)}
           hint={rows.length > 0 ? `/ ${rows.length}` : undefined}
           color="#0E9F6E"
@@ -401,7 +403,7 @@ export default function MessagesManager({
               <InputGroupInput
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher un nom, un e-mail, un mot…"
+                placeholder="Nom, e-mail, mot-clé…"
                 aria-label="Rechercher dans les messages"
               />
               {search && (
@@ -422,14 +424,14 @@ export default function MessagesManager({
                   aria-selected={filter === f.id}
                   onClick={() => setFilter(f.id)}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all sm:text-sm",
+                    "flex min-w-0 items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-xs font-semibold transition-all",
                     filter === f.id ? "bg-white text-[#1B4FA8] shadow-sm" : "text-slate-500 hover:text-slate-800"
                   )}
                 >
                   <span className="truncate">{f.label}</span>
                   <span
                     className={cn(
-                      "min-w-5 rounded-full px-1.5 text-[10px] font-bold tabular-nums leading-4",
+                      "min-w-4 shrink-0 rounded-full px-1 text-[10px] font-bold tabular-nums leading-4",
                       filter === f.id
                         ? f.id === "new" && counts.new > 0
                           ? "bg-red-500 text-white"
@@ -719,7 +721,7 @@ export default function MessagesManager({
                     )}
                     <span>
                       {selected.emailSent
-                        ? "Transmis par e-mail à contact@cubafoussam.cm."
+                        ? `Transmis par e-mail à ${recipient}.`
                         : `Non transmis par e-mail${selected.emailError ? ` : ${selected.emailError}` : "."}`}
                     </span>
                   </div>

@@ -1,7 +1,7 @@
 import AdminPageHeader from "@/components/admin/admin-page-header"
 import MessagesManager from "@/components/admin/messages/messages-manager"
 import { getContactMessages } from "@/lib/contact-db"
-import { isMailConfigured } from "@/lib/mailer"
+import { contactRecipient, isMailConfigured } from "@/lib/mailer"
 import { requireUserPage } from "@/lib/admin-page-auth"
 
 export const metadata = { title: "Messages — Administration" }
@@ -21,6 +21,7 @@ export default async function AdminMessagesPage() {
       <div className="mx-auto w-full max-w-7xl p-4 sm:p-6">
         <MessagesManager
           mailConfigured={isMailConfigured()}
+          recipient={contactRecipient()}
           messages={messages.map((m) => ({
             id: m.id,
             name: m.name,
